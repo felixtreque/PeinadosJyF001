@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Reservar Nueva Cita"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="8dp"/>
 
     <ListView
         android:id="@+id/lvCitas"
@@ -24,6 +25,7 @@
         android:id="@+id/btnIrInicio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ir a Inicio"/>
+        android:text="Ir a Inicio"
+        android:layout_marginTop="8dp"/>
 
 </LinearLayout>

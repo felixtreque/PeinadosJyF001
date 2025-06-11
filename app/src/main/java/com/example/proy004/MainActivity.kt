@@ -37,8 +37,21 @@ class MainActivity : AppCompatActivity() {
 
             try {
                 if (dbHelper.login(correo, contrasena)) {
-                    val intent = Intent(this, PantallaInicioSesion::class.java)
-                    startActivity(intent)
+                    // Obtener el ID del usuario
+                    val db = dbHelper.readableDatabase
+                    val cursor = db.rawQuery("SELECT ID_Usuario FROM Usuarios WHERE Email = ?", arrayOf(correo))
+                    
+                    if (cursor.moveToFirst()) {
+                        val userId = cursor.getInt(cursor.getColumnIndex("ID_Usuario"))
+                        cursor.close()
+                        
+                        // Pasar el ID del usuario a la siguiente actividad
+                        val intent = Intent(this, PantallaInicioSesion::class.java)
+                        intent.putExtra("USER_ID", userId)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(this, "Error al obtener el ID del usuario", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     Toast.makeText(this, "Email o contraseña incorrectos", Toast.LENGTH_SHORT).show()
                 }

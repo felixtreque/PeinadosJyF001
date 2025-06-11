@@ -13,6 +13,7 @@ class PantallaInicioSesion : AppCompatActivity() {
     private lateinit var btnCerrar: Button
     private lateinit var tvNombre: TextView
     private lateinit var dbHelper: DBHelper
+    private var userId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,8 +25,27 @@ class PantallaInicioSesion : AppCompatActivity() {
         tvNombre = findViewById(R.id.tvNombre)
         dbHelper = DBHelper(this)
 
-        // TODO: Obtener nombre del usuario desde la sesión
-        tvNombre.text = "¡Hola, Usuario!"
+        // Obtener el ID del usuario de la sesión (debe ser guardado en MainActivity)
+        val userId = intent.getIntExtra("USER_ID", -1)
+        if (userId == -1) {
+            finish()
+            return
+        }
+
+        // Obtener el rol del usuario
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT u.ID_Rol, c.Nombre FROM Usuarios u JOIN Clientes c ON u.ID_Usuario = c.ID_Usuario WHERE u.ID_Usuario = ?", arrayOf(userId.toString()))
+        
+        if (cursor.moveToFirst()) {
+            val nombre = cursor.getString(cursor.getColumnIndex("Nombre"))
+            val rol = cursor.getInt(cursor.getColumnIndex("ID_Rol"))
+            
+            tvNombre.text = "¡Hola, $nombre!"
+            
+            // Cambiar el texto del botón de gestión
+            btnGestion.text = "Gestión de Citas"
+        }
+        cursor.close()
 
         btnGestion.setOnClickListener {
             val intent = Intent(this, PantallaGestionCitas::class.java)
