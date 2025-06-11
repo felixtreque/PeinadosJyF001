@@ -418,12 +418,20 @@ class PantallaReservarCita : AppCompatActivity() {
             calendarHoraFin.add(Calendar.MINUTE, duracionMinutos)
             val horaFinEstimada = String.format("%02d:%02d", calendarHoraFin.get(Calendar.HOUR_OF_DAY), calendarHoraFin.get(Calendar.MINUTE))
 
+            // Extraer solo la fecha sin el día de la semana
+            val partesFecha = diaSeleccionado.split("(")
+            val fechaSinDia = if (partesFecha.size == 2) {
+                partesFecha[0].trim()
+            } else {
+                ""
+            }
+
             // Insertar la cita
             val values = ContentValues().apply {
                 put("ID_Cliente", idParaCita)
                 put("ID_Servicio", servicioId)
                 put("ID_Empleado", empleadoId)
-                put("Fecha_Cita", diaSeleccionado)
+                put("Fecha_Cita", fechaSinDia)
                 put("Hora_Inicio", horaInicio)
                 put("Hora_Fin_Estimada", horaFinEstimada)
                 put("Notas_Cita", notas)

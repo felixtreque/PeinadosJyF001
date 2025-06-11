@@ -64,21 +64,9 @@ class AdaptadorCitasCliente(private val context: Context, private val cursor: an
         val apellido1Empleado = cursor.getString(cursor.getColumnIndex("Apellido1_Empleado")) ?: ""
         val apellido2Empleado = cursor.getString(cursor.getColumnIndex("Apellido2_Empleado")) ?: ""
 
-        // Formatear fecha y hora
-        if (fecha.isNotEmpty() && horaInicio.isNotEmpty()) {
-            try {
-                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val date = SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH).parse(fecha)
-                holder.tvHoraServicio.text = "$horaInicio - $servicio"
-                holder.tvFecha.text = sdf.format(date)
-            } catch (e: ParseException) {
-                holder.tvHoraServicio.text = "Hora: $horaInicio - Servicio: $servicio"
-                holder.tvFecha.text = "Fecha inválida"
-            }
-        } else {
-            holder.tvHoraServicio.text = "Hora: $horaInicio - Servicio: $servicio"
-            holder.tvFecha.text = "Fecha no disponible"
-        }
+        // Mostrar fecha y hora
+        holder.tvHoraServicio.text = "$horaInicio - $servicio"
+        holder.tvFecha.text = fecha
 
         // Mostrar nombres completos sin mostrar "null"
         holder.tvCliente.text = "Cliente: $cliente ${if (apellido1Cliente.isNotEmpty()) apellido1Cliente else ""} ${if (apellido2Cliente.isNotEmpty()) apellido2Cliente else ""}".trim()
