@@ -35,8 +35,10 @@ class PantallaPrincipalCliente : AppCompatActivity() {
             val intent = Intent(this, PantallaReservarCita::class.java)
             intent.putExtra("USER_ID", obtenerIdCliente())
             intent.putExtra("USER_ROLE", "Cliente")
-            startActivity(intent)
+            startActivityForResult(intent, 1)
         }
+
+
     }
 
     private fun cargarCitas() {
@@ -69,9 +71,21 @@ class PantallaPrincipalCliente : AppCompatActivity() {
         lvCitas.adapter = adaptador
     }
 
+    private fun actualizarCitas() {
+        citasCursor?.close()
+        cargarCitas()
+    }
+
     private fun obtenerIdCliente(): Long {
         // Obtener el ID del usuario del intent
         return intent.getLongExtra("USER_ID", -1)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            actualizarCitas()
+        }
     }
 
     override fun onDestroy() {

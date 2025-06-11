@@ -434,6 +434,7 @@ class PantallaReservarCita : AppCompatActivity() {
                 val idCita = dbHelper.createCita(values, userId)
                 if (idCita != -1L) {
                     Toast.makeText(this, "Cita creada exitosamente", Toast.LENGTH_LONG).show()
+                    setResult(RESULT_OK)
                     finish()
                 } else {
                     Toast.makeText(this, "Error al crear la cita", Toast.LENGTH_LONG).show()
