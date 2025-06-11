@@ -11,6 +11,37 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Proy004"
-        tools:targetApi="31" />
+        tools:targetApi="31">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".PantallaInicioSesion"
+            android:exported="false" />
+
+        <activity
+            android:name=".PantallaGestionCitas"
+            android:exported="false" />
+
+        <activity
+            android:name=".PantallaRecursos"
+            android:exported="false" />
+
+        <activity
+            android:name=".PantallaRegistro"
+            android:exported="false" />
+
+        <activity
+            android:name=".PantallaReservarCita"
+            android:exported="false" />
+
+    </application>
 
 </manifest>

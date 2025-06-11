@@ -4,7 +4,6 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import java.io.*
 import android.content.ContentValues
 import android.database.Cursor
 
@@ -15,70 +14,65 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     companion object {
         private const val DATABASE_NAME = "BBDD_PeinadosJyF.db"
         private const val DATABASE_VERSION = 1
-        private const val DATABASE_PATH = "assets/BBDD_PeinadosJyF.sql"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-        // No se necesita crear tablas ya que se copia desde assets
+        // No necesitamos crear las tablas ya que la base de datos viene predefinida en assets
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        // No se necesita actualizar ya que no se modifican las tablas
+        // No necesitamos actualizar la base de datos ya que no se modificarán las tablas
     }
 
     init {
-        try {
-            val databasePath = context.getDatabasePath(DATABASE_NAME)
-            if (!databasePath.exists()) {
-                copyDatabaseFromAssets()
+        // Copiar la base de datos desde assets si no existe
+        val dbPath = context.getDatabasePath(DATABASE_NAME)
+        if (!dbPath.exists()) {
+            try {
+                val inputStream = context.assets.open("BBDD_PeinadosJyF.db")
+                val outputStream = dbPath.outputStream()
+                val buffer = ByteArray(1024)
+                var length: Int
+                while (inputStream.read(buffer).also { length = it } > 0) {
+                    outputStream.write(buffer, 0, length)
+                }
+                outputStream.flush()
+                outputStream.close()
+                inputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-        } catch (e: IOException) {
-            Log.e("DBHelper", "Error copying database: ${e.message}")
         }
     }
 
-    private fun copyDatabaseFromAssets() {
-        try {
-            val inputStream = context.assets.open(DATABASE_PATH)
-            val outputStream = FileOutputStream(context.getDatabasePath(DATABASE_NAME))
-            
-            val buffer = ByteArray(1024)
-            var length: Int
-            while (inputStream.read(buffer).also { length = it } > 0) {
-                outputStream.write(buffer, 0, length)
-            }
-            
-            outputStream.flush()
-            outputStream.close()
-            inputStream.close()
-        } catch (e: IOException) {
-            Log.e("DBHelper", "Error copying database: ${e.message}")
-        }
+
+
+
+
+
+
+    override fun getReadableDatabase(): SQLiteDatabase {
+        return super.getReadableDatabase()
     }
 
-    fun getReadableDatabase(): SQLiteDatabase {
-        if (database == null) {
-            database = writableDatabase
-        }
-        return database!!
-    }
-
-    fun getWritableDatabase(): SQLiteDatabase {
-        if (database == null) {
-            database = writableDatabase
-        }
-        return database!!
+    override fun getWritableDatabase(): SQLiteDatabase {
+        return super.getWritableDatabase()
     }
 
     // Métodos para gestionar usuarios
-    fun login(email: String, password: String): Boolean {
-        val db = getReadableDatabase()
-        val query = "SELECT * FROM Usuarios WHERE Email = ? AND Contrasena_Hash = ?"
-        val cursor = db.rawQuery(query, arrayOf(email, password))
-        
-        val result = cursor.count > 0
-        cursor.close()
-        return result
+    fun login(email: String, contrasena: String): Boolean {
+        try {
+            val db = getReadableDatabase()
+            val query = "SELECT * FROM Usuarios WHERE Email = ? AND Contrasena_Hash = ?"
+            val cursor = db.rawQuery(query, arrayOf(email, contrasena))
+            
+            val result = cursor.count > 0
+            cursor.close()
+            return result
+        } catch (e: Exception) {
+            Log.e("DBHelper", "Error en login: ${e.message}")
+            return false
+        }
     }
 
     // Métodos para gestionar citas
@@ -114,16 +108,20 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         return db.delete("Citas", "ID_Cita = ?", arrayOf(idCita.toString()))
     }
 
-    // Métodos para gestionar servicios
-    fun getServicios(): Cursor {
-        val db = getReadableDatabase()
-        return db.query("Servicios", null, null, null, null, null, "Nombre_Servicio ASC")
-    }
-
-    // Métodos para gestionar empleados
+    // Métodos para gestionar recursos
     fun getEmpleados(): Cursor {
         val db = getReadableDatabase()
         return db.query("Empleados", null, null, null, null, null, "Nombre ASC")
+    }
+
+    fun getServicios(): Cursor {
+        val db = getReadableDatabase()
+        return db.query("Servicios", null, null, null, null, null, "Nombre ASC")
+    }
+
+    fun getClientes(): Cursor {
+        val db = getReadableDatabase()
+        return db.query("Clientes", null, null, null, null, null, "Nombre ASC")
     }
 
     // Métodos para gestionar horarios

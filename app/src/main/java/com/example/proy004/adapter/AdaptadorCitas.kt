@@ -1,16 +1,18 @@
 package com.example.proy004.adapter
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.TextView
 import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.TextView
 import com.example.proy004.R
+import android.database.Cursor
 import com.example.proy004.database.DBHelper
+import android.widget.Toast
+import android.widget.LinearLayout
 
 class AdaptadorCitas(private val context: Context, private val cursor: android.database.Cursor) : BaseAdapter() {
     private val dbHelper = DBHelper(context)

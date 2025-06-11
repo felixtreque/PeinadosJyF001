@@ -3,34 +3,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center">
 
     <TextView
-        android:id="@+id/tvNombreUsuario"
+        android:id="@+id/tvNombre"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="24sp"
         android:layout_marginBottom="32dp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:text="¡Hola, Usuario!"/>
 
     <Button
-        android:id="@+id/btnGestionCitas"
+        android:id="@+id/btnGestion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Gestión de Citas"
+        android:text="Gestionar Citas"
         android:layout_marginBottom="16dp"/>
 
     <Button
         android:id="@+id/btnRecursos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pantalla de Recursos"
+        android:text="Recursos"
         android:layout_marginBottom="16dp"/>
 
     <Button
-        android:id="@+id/btnCerrarSesion"
+        android:id="@+id/btnCerrar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cerrar Sesión"/>
+        android:text="Cerrar"/>
 
 </LinearLayout>

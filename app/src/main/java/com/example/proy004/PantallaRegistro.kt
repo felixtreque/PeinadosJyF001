@@ -2,6 +2,9 @@ package com.example.proy004
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.BaseColumns
+import android.database.sqlite.SQLiteDatabase
+import android.content.ContentValues
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -80,7 +83,7 @@ class PantallaRegistro : AppCompatActivity() {
             put("Email", email)
             put("Contrasena_Hash", password) // En una aplicación real, usaríamos un hash de la contraseña
             put("DNI_NIE_Pasaporte", dni)
-            put("ID_Rol", 2) // 2 es el ID del rol Cliente
+            put("ID_Rol", 2) // 2 es el ID del rol Cliente (según la base de datos)
         }
         val usuarioId = db.insert("Usuarios", null, usuarioValues)
 

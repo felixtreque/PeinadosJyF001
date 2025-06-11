@@ -2,8 +2,12 @@ package com.example.proy004
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.BaseColumns
+import android.database.sqlite.SQLiteDatabase
+import android.content.ContentValues
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity

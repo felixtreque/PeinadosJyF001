@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:padding="16dp">
 
     <ImageView
         android:layout_width="120dp"
@@ -13,32 +13,32 @@
         android:layout_marginBottom="32dp" />
 
     <EditText
-        android:id="@+id/etEmail"
+        android:id="@+id/etCorreo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Email"
+        android:hint="Correo"
         android:inputType="textEmailAddress"
         android:layout_marginBottom="16dp" />
 
     <EditText
-        android:id="@+id/etPassword"
+        android:id="@+id/etContrasena"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:hint="Contraseña"
         android:inputType="textPassword"
         android:layout_marginBottom="24dp" />
 
     <Button
-        android:id="@+id/btnLogin"
+        android:id="@+id/btnAcceso"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login" />
+        android:text="Acceder" />
 
     <Button
-        android:id="@+id/btnRegister"
+        android:id="@+id/btnNuevoCliente"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register New Client"
+        android:text="Nuevo Cliente"
         android:layout_marginTop="16dp" />
 
 </LinearLayout>
