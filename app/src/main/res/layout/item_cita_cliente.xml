@@ -15,18 +15,11 @@
         android:layout_marginBottom="8dp"/>
 
     <TextView
-        android:id="@+id/tvFecha"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
         android:id="@+id/tvCliente"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="14sp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="4dp"/>
 
     <TextView
         android:id="@+id/tvEmpleado"
@@ -40,28 +33,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="14sp"
-        android:textColor="#FFA500"
+        android:textColor="@android:color/holo_orange_dark"
         android:layout_marginBottom="16dp"/>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/btnCancelar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btnCompletar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Completar"/>
-
-        <Button
-            android:id="@+id/btnCancelar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Cancelar"/>
-
-    </LinearLayout>
+        android:text="Cancelar"/>
 
 </LinearLayout>

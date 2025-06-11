@@ -13,10 +13,8 @@ import android.database.Cursor
 import com.example.proy004.database.DBHelper
 import android.widget.Toast
 import android.widget.LinearLayout
-import java.text.SimpleDateFormat
-import java.util.Locale
 
-class AdaptadorCitas(private val context: Context, private val cursor: android.database.Cursor) : BaseAdapter() {
+class AdaptadorCitasCliente(private val context: Context, private val cursor: android.database.Cursor) : BaseAdapter() {
     private val dbHelper = DBHelper(context)
     private var db: SQLiteDatabase? = null
 
@@ -43,7 +41,7 @@ class AdaptadorCitas(private val context: Context, private val cursor: android.d
         val holder: ViewHolder
 
         if (view == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.item_cita, parent, false)
+            view = LayoutInflater.from(context).inflate(R.layout.item_cita_cliente, parent, false)
             holder = ViewHolder(view)
             view.tag = holder
         } else {
@@ -57,41 +55,14 @@ class AdaptadorCitas(private val context: Context, private val cursor: android.d
         val fecha = cursor.getString(cursor.getColumnIndex("Fecha_Cita"))
         val horaInicio = cursor.getString(cursor.getColumnIndex("Hora_Inicio"))
         val estado = cursor.getString(cursor.getColumnIndex("Estado_Cita"))
-        val empleado = cursor.getString(cursor.getColumnIndex("Nombre_Empleado"))
-        val apellido1Cliente = cursor.getString(cursor.getColumnIndex("Apellido1_Cliente")) ?: ""
-        val apellido2Cliente = cursor.getString(cursor.getColumnIndex("Apellido2_Cliente")) ?: ""
-        val apellido1Empleado = cursor.getString(cursor.getColumnIndex("Apellido1_Empleado")) ?: ""
-        val apellido2Empleado = cursor.getString(cursor.getColumnIndex("Apellido2_Empleado")) ?: ""
 
         // Formatear fecha y hora
-        if (fecha.isNotEmpty() && horaInicio.isNotEmpty()) {
-            try {
-                // Convertir la fecha a formato dd/MM/yyyy
-                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val date = SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH).parse(fecha)
-                holder.tvHoraServicio.text = "$horaInicio - $servicio"
-                holder.tvFecha.text = sdf.format(date)
-            } catch (e: Exception) {
-                holder.tvHoraServicio.text = "Hora: $horaInicio - Servicio: $servicio"
-                holder.tvFecha.text = "Fecha inválida"
-            }
-        } else {
-            holder.tvHoraServicio.text = "Hora: $horaInicio - Servicio: $servicio"
-            holder.tvFecha.text = "Fecha no disponible"
-        }
+        val fechaHora = "${fecha.substring(8,10)}/${fecha.substring(5,7)}/${fecha.substring(0,4)} - $horaInicio"
 
-        // Mostrar nombres completos sin mostrar "null"
-        holder.tvCliente.text = "Cliente: $cliente ${if (apellido1Cliente.isNotEmpty()) apellido1Cliente else ""} ${if (apellido2Cliente.isNotEmpty()) apellido2Cliente else ""}".trim()
-        holder.tvEmpleado.text = "Empleado: $empleado ${if (apellido1Empleado.isNotEmpty()) apellido1Empleado else ""} ${if (apellido2Empleado.isNotEmpty()) apellido2Empleado else ""}".trim()
+        holder.tvHoraServicio.text = "$fechaHora - $servicio"
+        holder.tvCliente.text = cliente
+        holder.tvEmpleado.text = cursor.getString(cursor.getColumnIndex("Nombre_Empleado"))
         holder.tvEstado.text = estado
-
-        holder.btnCompletar.setOnClickListener {
-            val result = dbHelper.updateCitaEstado(idCita.toInt(), "Completada")
-            if (result > 0) {
-                Toast.makeText(context, "Cita marcada como completada", Toast.LENGTH_SHORT).show()
-                // TODO: Actualizar la lista
-            }
-        }
 
         holder.btnCancelar.setOnClickListener {
             val result = dbHelper.deleteCita(idCita.toInt())
@@ -106,11 +77,9 @@ class AdaptadorCitas(private val context: Context, private val cursor: android.d
 
     private class ViewHolder(view: View) {
         val tvHoraServicio: TextView = view.findViewById(R.id.tvHoraServicio)
-        val tvFecha: TextView = view.findViewById(R.id.tvFecha)
         val tvCliente: TextView = view.findViewById(R.id.tvCliente)
         val tvEmpleado: TextView = view.findViewById(R.id.tvEmpleado)
         val tvEstado: TextView = view.findViewById(R.id.tvEstado)
-        val btnCompletar: Button = view.findViewById(R.id.btnCompletar)
         val btnCancelar: Button = view.findViewById(R.id.btnCancelar)
     }
 }

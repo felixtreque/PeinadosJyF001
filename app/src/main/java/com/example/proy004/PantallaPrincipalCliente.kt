@@ -5,32 +5,26 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
-import com.example.proy004.adapter.AdaptadorCitas
+import com.example.proy004.adapter.AdaptadorCitasCliente
 import com.example.proy004.database.DBHelper
 import android.database.Cursor
 
-class PantallaGestionCitas : AppCompatActivity() {
+class PantallaPrincipalCliente : AppCompatActivity() {
     private lateinit var dbHelper: DBHelper
     private lateinit var lvCitas: ListView
-    private lateinit var btnNuevaCita: Button
     private lateinit var btnIrInicio: Button
     private var citasCursor: Cursor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_gestion_citas)
+        setContentView(R.layout.activity_gestion_citas) // Usamos el mismo layout que gestión de citas
 
         dbHelper = DBHelper(this)
         lvCitas = findViewById(R.id.lvCitas)
-        btnNuevaCita = findViewById(R.id.btnNuevaCita)
         btnIrInicio = findViewById(R.id.btnIrInicio)
+        btnIrInicio.text = "Cerrar Sesión"
 
         cargarCitas()
-
-        btnNuevaCita.setOnClickListener {
-            val intent = Intent(this, PantallaReservarCita::class.java)
-            startActivity(intent)
-        }
 
         btnIrInicio.setOnClickListener {
             finish()
@@ -47,23 +41,25 @@ class PantallaGestionCitas : AppCompatActivity() {
                 c.Hora_Inicio,
                 c.Estado_Cita,
                 cli.Nombre AS Nombre_Cliente,
-                cli.Apellido1 AS Apellido1_Cliente,
-                cli.Apellido2 AS Apellido2_Cliente,
                 serv.Nombre_Servicio,
-                emp.Nombre AS Nombre_Empleado,
-                emp.Apellido1 AS Apellido1_Empleado,
-                emp.Apellido2 AS Apellido2_Empleado
+                emp.Nombre AS Nombre_Empleado
             FROM Citas c
             JOIN Clientes cli ON c.ID_Cliente = cli.ID_Cliente
             JOIN Servicios serv ON c.ID_Servicio = serv.ID_Servicio
             JOIN Empleados emp ON c.ID_Empleado = emp.ID_Empleado
+            WHERE cli.ID_Cliente = ?
             ORDER BY c.Fecha_Cita, c.Hora_Inicio
             """.trimIndent(),
-            null
+            arrayOf(obtenerIdCliente().toString())
         )
 
-        val adaptador = AdaptadorCitas(this, citasCursor!!)
+        val adaptador = AdaptadorCitasCliente(this, citasCursor!!)
         lvCitas.adapter = adaptador
+    }
+
+    private fun obtenerIdCliente(): Long {
+        // TODO: Implementar obtención del ID del cliente desde la sesión
+        return 1 // Temporalmente usando ID 1
     }
 
     override fun onDestroy() {
