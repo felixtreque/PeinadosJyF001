@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.proy004.adapter.AdaptadorClientes
 import com.example.proy004.adapter.AdaptadorEmpleados
@@ -69,6 +70,10 @@ class PantallaRecursos : AppCompatActivity() {
         )
         val adaptador = AdaptadorClientes(this, clientesCursor!!)
         lvClientes.adapter = adaptador
+        
+        // Mostrar número total de clientes
+        val totalClientes = clientesCursor?.count ?: 0
+        Toast.makeText(this, "Total clientes: $totalClientes", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {

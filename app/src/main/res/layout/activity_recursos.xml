@@ -9,57 +9,69 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Empleados"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="24dp"
+        android:paddingBottom="12dp"
+        android:background="@android:color/darker_gray"
+        android:layout_marginTop="16dp"/>
 
     <ListView
         android:id="@+id/lvEmpleados"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="0.3"
         android:divider="@android:color/darker_gray"
         android:dividerHeight="1dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="32dp"
+        android:padding="12dp"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Servicios"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="24dp"
+        android:paddingBottom="12dp"
+        android:background="@android:color/darker_gray"/>
 
     <ListView
         android:id="@+id/lvServicios"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="0.3"
         android:divider="@android:color/darker_gray"
         android:dividerHeight="1dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="32dp"
+        android:padding="12dp"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Clientes"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="32dp"
+        android:paddingBottom="12dp"
+        android:background="@android:color/darker_gray"/>
 
     <ListView
         android:id="@+id/lvClientes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="0.4"
         android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp"/>
+        android:dividerHeight="1dp"
+        android:padding="12dp"/>
 
     <Button
         android:id="@+id/btnIrInicio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Ir a Inicio"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="32dp"
+        android:padding="16dp"/>
 
 </LinearLayout>
