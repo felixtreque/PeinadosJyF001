@@ -7,14 +7,17 @@ import android.database.sqlite.SQLiteDatabase
 import android.content.ContentValues
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.DatePicker
+
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
+import android.widget.AdapterView
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.proy004.adapter.AdaptadorSpinnerEmpleados
 import com.example.proy004.adapter.AdaptadorSpinnerServicios
 import com.example.proy004.adapter.AdaptadorSpinnerHoras
+import com.example.proy004.adapter.AdaptadorDiasLaborables
 import com.example.proy004.database.DBHelper
 import android.database.Cursor
 import java.util.Calendar
@@ -23,7 +26,7 @@ class PantallaReservarCita : AppCompatActivity() {
     private lateinit var dbHelper: DBHelper
     private lateinit var spServicios: Spinner
     private lateinit var spEmpleados: Spinner
-    private lateinit var dpFecha: DatePicker
+    private lateinit var spDiasLaborables: Spinner
     private lateinit var spHoras: Spinner
     private lateinit var etNotasCita: EditText
     private lateinit var btnCrearCita: Button
@@ -39,7 +42,7 @@ class PantallaReservarCita : AppCompatActivity() {
         dbHelper = DBHelper(this)
         spServicios = findViewById(R.id.spServicios)
         spEmpleados = findViewById(R.id.spEmpleados)
-        dpFecha = findViewById(R.id.dpFecha)
+        spDiasLaborables = findViewById(R.id.spDiasLaborables)
         spHoras = findViewById(R.id.spHoras)
         etNotasCita = findViewById(R.id.etNotasCita)
         btnCrearCita = findViewById(R.id.btnCrearCita)
@@ -48,6 +51,7 @@ class PantallaReservarCita : AppCompatActivity() {
         cargarServicios()
         cargarEmpleados()
         cargarHoras()
+        actualizarDiasLaborables()
 
         btnCrearCita.setOnClickListener {
             crearCita()
@@ -79,12 +83,11 @@ class PantallaReservarCita : AppCompatActivity() {
     }
 
     private fun cargarHoras() {
-        val horas = ArrayList<String>()
-        
         // Añadir horas desde las 9:00 hasta las 18:30 en intervalos de 30 minutos
+        val horas = ArrayList<String>()
         for (hora in 9..18) {
             horas.add(String.format("%02d:00", hora))
-            if (hora < 18) { // No añadimos 18:30 ya que es el límite
+            if (hora < 18) {
                 horas.add(String.format("%02d:30", hora))
             }
         }
@@ -93,19 +96,32 @@ class PantallaReservarCita : AppCompatActivity() {
         spHoras.adapter = adaptador
     }
 
-    private fun getDiaSemana(diaMes: Int): String {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.DAY_OF_MONTH, diaMes)
-        return when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.MONDAY -> "Lunes"
-            Calendar.TUESDAY -> "Martes"
-            Calendar.WEDNESDAY -> "Miércoles"
-            Calendar.THURSDAY -> "Jueves"
-            Calendar.FRIDAY -> "Viernes"
-            Calendar.SATURDAY -> "Sábado"
-            Calendar.SUNDAY -> "Domingo"
-            else -> ""
+    private fun cargarDiasLaborables() {
+        if (spEmpleados.selectedItemId >= 0) {
+            val empleadoId = spEmpleados.selectedItemId
+            val diasLaborables = AdaptadorDiasLaborables.obtenerDiasLaborables(this, dbHelper, empleadoId)
+            val adaptador = AdaptadorDiasLaborables(this, diasLaborables)
+            spDiasLaborables.adapter = adaptador
         }
+    }
+
+    private fun actualizarDiasLaborables() {
+        spEmpleados.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                cargarDiasLaborables()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // No hacer nada
+            }
+        }
+    }
+
+
+
+    private fun convertirHoraAMinutos(hora: String): Int {
+        val partes = hora.split(":")
+        return partes[0].toInt() * 60 + partes[1].toInt()
     }
 
     private fun crearCita() {
@@ -114,30 +130,52 @@ class PantallaReservarCita : AppCompatActivity() {
         val notas = etNotasCita.text.toString()
 
         // Obtener fecha y hora seleccionadas
-        val fecha = dpFecha.year.toString() + "-" + 
-                    String.format("%02d", dpFecha.month + 1) + "-" +
-                    String.format("%02d", dpFecha.dayOfMonth)
+        val diaLaborableSeleccionado = spDiasLaborables.selectedItem.toString()
+        val partesFechaSeleccionada = diaLaborableSeleccionado.split(" ")
+        val fechaSeleccionada = partesFechaSeleccionada[1] // La fecha está en formato "Lunes 2025-06-11"
         val horaInicio = spHoras.selectedItem.toString()
+        val diaSeleccionado = partesFechaSeleccionada[0]
 
-        // Validar que la hora esté dentro del horario del empleado
+        // Validar que el día sea laboral para el empleado
         val dbHorario = dbHelper.getReadableDatabase()
         val cursorHorario = dbHorario.rawQuery(
+            "SELECT COUNT(*) FROM Horarios_Disponibles_Empleado " +
+            "WHERE ID_Empleado = ? AND Dia_Semana = ?",
+            arrayOf(empleadoId.toString(), diaSeleccionado)
+        )
+        
+        cursorHorario.moveToFirst()
+        val diaLaboral = cursorHorario.getInt(0) > 0
+        cursorHorario.close()
+        
+        if (!diaLaboral) {
+            Toast.makeText(this, "El día seleccionado no es laboral para este empleado", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Validar que la hora esté dentro del horario del empleado
+        val cursorHorario2 = dbHorario.rawQuery(
             "SELECT Hora_Inicio_Bloque, Hora_Fin_Bloque FROM Horarios_Disponibles_Empleado " +
             "WHERE ID_Empleado = ? AND Dia_Semana = ?",
-            arrayOf(empleadoId.toString(), getDiaSemana(dpFecha.dayOfMonth))
+            arrayOf(empleadoId.toString(), diaSeleccionado)
         )
         
         var horaValida = false
-        while (cursorHorario.moveToNext()) {
-            val horaInicioBloque = cursorHorario.getString(0)
-            val horaFinBloque = cursorHorario.getString(1)
+        while (cursorHorario2.moveToNext()) {
+            val horaInicioBloque = cursorHorario2.getString(0)
+            val horaFinBloque = cursorHorario2.getString(1)
             
-            if (horaInicio >= horaInicioBloque && horaInicio < horaFinBloque) {
+            // Convertir las horas a minutos para comparar
+            val horaInicioMin = convertirHoraAMinutos(horaInicio)
+            val horaInicioBloqueMin = convertirHoraAMinutos(horaInicioBloque)
+            val horaFinBloqueMin = convertirHoraAMinutos(horaFinBloque)
+            
+            if (horaInicioMin >= horaInicioBloqueMin && horaInicioMin < horaFinBloqueMin) {
                 horaValida = true
                 break
             }
         }
-        cursorHorario.close()
+        cursorHorario2.close()
 
         if (!horaValida) {
             Toast.makeText(this, "La hora seleccionada no está dentro del horario del empleado", Toast.LENGTH_LONG).show()
@@ -156,11 +194,17 @@ class PantallaReservarCita : AppCompatActivity() {
         }
         cursorServicio.close()
 
+        // Crear el objeto Date a partir de la fecha seleccionada
+        val partesFechaNumerica = fechaSeleccionada.split("-")
+        val anio = partesFechaNumerica[0].toInt()
+        val mes = partesFechaNumerica[1].toInt() - 1 // En Calendar, enero es 0
+        val dia = partesFechaNumerica[2].toInt()
+        
         val calendar = Calendar.getInstance()
         calendar.clear()
-        calendar.set(Calendar.YEAR, dpFecha.year)
-        calendar.set(Calendar.MONTH, dpFecha.month)
-        calendar.set(Calendar.DAY_OF_MONTH, dpFecha.dayOfMonth)
+        calendar.set(Calendar.YEAR, anio)
+        calendar.set(Calendar.MONTH, mes)
+        calendar.set(Calendar.DAY_OF_MONTH, dia)
         calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(horaInicio.split(":")[0]))
         calendar.set(Calendar.MINUTE, Integer.parseInt(horaInicio.split(":")[1]))
 
