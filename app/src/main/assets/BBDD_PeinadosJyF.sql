@@ -112,8 +112,49 @@ INSERT INTO Empleados (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Inic
 VALUES ('Miguel', 'Santos', 'Martinez', 'miguel.santos.emp@gmail.com', '698765432', '2023-02-15', NULL, (SELECT ID_Usuario FROM Usuarios WHERE Email = 'miguel.santos.emp@gmail.com'), 'Especialista en cortes masculinos.');
 
 -- HORARIOS
+-- Horarios para Laura (Turno mañana y tarde)
 INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
 VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Lunes', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Lunes', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Martes', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Martes', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Miércoles', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Miércoles', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Jueves', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Jueves', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Viernes', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Viernes', '14:00', '18:00', '2024-01-01', NULL);
+
+-- Horarios para Miguel (Turno mañana y tarde)
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Lunes', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Lunes', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Martes', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Martes', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Miércoles', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Miércoles', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Jueves', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Jueves', '14:00', '18:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Viernes', '09:00', '13:00', '2024-01-01', NULL);
+INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
+VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'miguel.santos.emp@gmail.com'), 'Viernes', '14:00', '18:00', '2024-01-01', NULL);
 
 -- SERVICIOS
 INSERT INTO Servicios (Nombre_Servicio, Descripcion, Duracion_Estimada_Minutos, Precio) VALUES ('Corte Simple', 'Corte de pelo básico y rápido.', 30, 15.00);

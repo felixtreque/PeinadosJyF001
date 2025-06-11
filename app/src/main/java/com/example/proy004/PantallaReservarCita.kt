@@ -18,6 +18,9 @@ import com.example.proy004.adapter.AdaptadorSpinnerEmpleados
 import com.example.proy004.adapter.AdaptadorSpinnerServicios
 import com.example.proy004.adapter.AdaptadorSpinnerHoras
 import com.example.proy004.adapter.AdaptadorDiasLaborables
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Locale
 import com.example.proy004.database.DBHelper
 import android.database.Cursor
 import java.util.Calendar
@@ -129,9 +132,13 @@ class PantallaReservarCita : AppCompatActivity() {
 
         spDiasLaborables.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val fechaSeleccionada = parent?.selectedItem.toString()
+                tvFechaSeleccionada.text = "Fecha seleccionada: $fechaSeleccionada"
                 cargarHoras()
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                tvFechaSeleccionada.text = ""
+            }
         }
 
         // Configurar botones
@@ -141,18 +148,6 @@ class PantallaReservarCita : AppCompatActivity() {
         // Inicializar datos
         cargarServicios()
         spEmpleados.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, obtenerEmpleados())
-
-        // Configurar spinner de días laborables
-        spDiasLaborables.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val fechaSeleccionada = parent?.selectedItem.toString()
-                tvFechaSeleccionada.text = "Fecha seleccionada: $fechaSeleccionada"
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                tvFechaSeleccionada.text = ""
-            }
-        }
     }
 
     private fun obtenerEmpleados(): List<String> {
@@ -191,15 +186,77 @@ class PantallaReservarCita : AppCompatActivity() {
 
     private fun cargarHoras() {
         val horas = ArrayList<String>()
-        for (hora in 9..18) {
-            horas.add(String.format("%02d:00", hora))
-            if (hora < 18) {
-                horas.add(String.format("%02d:30", hora))
-            }
+        
+        if (empleadoId == -1L || spDiasLaborables.selectedItem == null) {
+            // Si no hay empleado seleccionado o no hay día, mostrar mensaje
+            Toast.makeText(this, "Por favor, seleccione un empleado y un día laboral", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Extraer el día de la semana en español directamente del texto del spinner
+        val fechaSeleccionada = spDiasLaborables.selectedItem.toString()
+        val partes = fechaSeleccionada.split("(")
+        if (partes.size != 2) {
+            Toast.makeText(this, "Formato de fecha incorrecto", Toast.LENGTH_SHORT).show()
+            return
         }
         
-        val adaptador = AdaptadorSpinnerHoras(this, horas)
-        spHoras.adapter = adaptador
+        val diaSemana = partes[1].replace(")", "").trim()
+        
+        // Log de depuración
+        println("DEBUG: Día de la semana extraído: $diaSemana")
+        
+        try {
+            val db = dbHelper.getReadableDatabase()
+            val cursorHorario = db.rawQuery(
+                "SELECT Hora_Inicio_Bloque, Hora_Fin_Bloque FROM Horarios_Disponibles_Empleado " +
+                "WHERE ID_Empleado = ? AND Dia_Semana = ? ORDER BY Hora_Inicio_Bloque",
+                arrayOf(empleadoId.toString(), diaSemana)
+            )
+            
+            if (cursorHorario.count == 0) {
+                // Si no hay horarios disponibles para ese día
+                Toast.makeText(this, "No hay horarios disponibles para este día y empleado", Toast.LENGTH_SHORT).show()
+                spHoras.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, horas)
+                cursorHorario.close()
+                return
+            }
+            
+            try {
+                while (cursorHorario.moveToNext()) {
+                    val horaInicio = cursorHorario.getString(0)
+                    val horaFin = cursorHorario.getString(1)
+                    
+                    // Log de depuración
+                    println("DEBUG: Horario encontrado - Inicio: $horaInicio, Fin: $horaFin")
+                    
+                    val horaInicioMin = convertirHoraAMinutos(horaInicio)
+                    val horaFinMin = convertirHoraAMinutos(horaFin)
+                    
+                    var horaActualMin = horaInicioMin
+                    while (horaActualMin < horaFinMin) {
+                        val horaActual = String.format("%02d:%02d", horaActualMin / 60, horaActualMin % 60)
+                        horas.add(horaActual)
+                        horaActualMin += 30 // Incrementar en 30 minutos
+                    }
+                }
+                
+                // Log de depuración
+                println("DEBUG: Horas generadas: ${horas.size}")
+                
+                cursorHorario.close()
+                spHoras.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, horas)
+                
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Error al procesar los horarios: ${e.message}", Toast.LENGTH_LONG).show()
+                cursorHorario.close()
+            }
+            
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error al cargar los horarios: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun cargarDiasLaborables() {
@@ -212,20 +269,21 @@ class PantallaReservarCita : AppCompatActivity() {
     }
 
     private fun actualizarDiasLaborables() {
-        spEmpleados.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                cargarDiasLaborables()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // No hacer nada
-            }
+        if (empleadoId != -1L) {
+            cargarDiasLaborables()
         }
     }
 
     private fun convertirHoraAMinutos(hora: String): Int {
-        val partes = hora.split(":")
-        return partes[0].toInt() * 60 + partes[1].toInt()
+        try {
+            val partes = hora.split(":")
+            if (partes.size != 2) {
+                throw IllegalArgumentException("Formato de hora inválido")
+            }
+            return partes[0].toInt() * 60 + partes[1].toInt()
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Formato de hora inválido: $hora", e)
+        }
     }
 
     private fun crearCita() {
@@ -269,16 +327,30 @@ class PantallaReservarCita : AppCompatActivity() {
                 cursorEmpleado.close()
             }
 
+            // Extraer el día de la semana del texto seleccionado
+            val partes = diaSeleccionado.split("(")
+            if (partes.size != 2) {
+                Toast.makeText(this, "Formato de fecha incorrecto", Toast.LENGTH_LONG).show()
+                return
+            }
+            val diaSemana = partes[1].replace(")", "").trim()
+
             // Verificar día laboral y horario
             val db = dbHelper.getReadableDatabase()
             val cursorHorario = db.rawQuery(
                 "SELECT Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque FROM Horarios_Disponibles_Empleado " +
                 "WHERE ID_Empleado = ? AND Dia_Semana = ?",
-                arrayOf(empleadoId.toString(), diaSeleccionado)
+                arrayOf(empleadoId.toString(), diaSemana)
             )
             
             var diaLaboral = false
             var horaValida = false
+            
+            if (cursorHorario.count == 0) {
+                Toast.makeText(this, "El día seleccionado no es laboral para este empleado", Toast.LENGTH_LONG).show()
+                cursorHorario.close()
+                return
+            }
             
             while (cursorHorario.moveToNext()) {
                 diaLaboral = true
@@ -358,12 +430,16 @@ class PantallaReservarCita : AppCompatActivity() {
                 put("Estado_Cita", "Pendiente")
             }
 
-            val idCita = dbHelper.createCita(values, userId)
-            if (idCita != -1L) {
-                Toast.makeText(this, "Cita creada exitosamente", Toast.LENGTH_LONG).show()
-                finish()
-            } else {
-                Toast.makeText(this, "Error al crear la cita", Toast.LENGTH_LONG).show()
+            try {
+                val idCita = dbHelper.createCita(values, userId)
+                if (idCita != -1L) {
+                    Toast.makeText(this, "Cita creada exitosamente", Toast.LENGTH_LONG).show()
+                    finish()
+                } else {
+                    Toast.makeText(this, "Error al crear la cita", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al insertar la cita: ${e.message}", Toast.LENGTH_LONG).show()
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Error al procesar la cita: ${e.message}", Toast.LENGTH_LONG).show()

@@ -10,6 +10,8 @@ import android.widget.AdapterView
 import java.util.Calendar
 import java.util.ArrayList
 import com.example.proy004.database.DBHelper
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class AdaptadorDiasLaborables(context: Context, private val diasLaborables: ArrayList<String>) :
     ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, diasLaborables) {
@@ -48,7 +50,10 @@ class AdaptadorDiasLaborables(context: Context, private val diasLaborables: Arra
                 
                 cursor.moveToFirst()
                 if (cursor.getInt(0) > 0) {
-                    diasLaborables.add(formatoFecha(dia))
+                    val fecha = formatoFecha(dia)
+                    val diaSemana = getDiaSemana(dia)
+                    
+                    diasLaborables.add("$fecha ($diaSemana)")
                 }
                 cursor.close()
             }
@@ -57,25 +62,14 @@ class AdaptadorDiasLaborables(context: Context, private val diasLaborables: Arra
         }
 
         private fun getDiaSemana(calendar: Calendar): String {
-            return when (calendar.get(Calendar.DAY_OF_WEEK)) {
-                Calendar.MONDAY -> "Lunes"
-                Calendar.TUESDAY -> "Martes"
-                Calendar.WEDNESDAY -> "Miércoles"
-                Calendar.THURSDAY -> "Jueves"
-                Calendar.FRIDAY -> "Viernes"
-                Calendar.SATURDAY -> "Sábado"
-                Calendar.SUNDAY -> "Domingo"
-                else -> ""
-            }
+            val diasSemana = arrayOf("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado")
+            val dia = calendar.get(Calendar.DAY_OF_WEEK)
+            return diasSemana[dia - 1]
         }
 
         private fun formatoFecha(calendar: Calendar): String {
-            return String.format(
-                "%02d/%02d/%d",
-                calendar.get(Calendar.DAY_OF_MONTH),
-                calendar.get(Calendar.MONTH) + 1,
-                calendar.get(Calendar.YEAR)
-            )
+            val formato = SimpleDateFormat("dd/MM/yyyy")
+            return formato.format(calendar.time)
         }
     }
 }
