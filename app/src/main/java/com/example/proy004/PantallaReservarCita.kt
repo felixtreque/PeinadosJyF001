@@ -130,11 +130,27 @@ class PantallaReservarCita : AppCompatActivity() {
         val notas = etNotasCita.text.toString()
 
         // Obtener fecha y hora seleccionadas
-        val diaLaborableSeleccionado = spDiasLaborables.selectedItem.toString()
-        val partesFechaSeleccionada = diaLaborableSeleccionado.split(" ")
-        val fechaSeleccionada = partesFechaSeleccionada[1] // La fecha está en formato "Lunes 2025-06-11"
+        val fechaSeleccionada = spDiasLaborables.selectedItem.toString() // La fecha ya viene en formato dd/MM/yyyy
         val horaInicio = spHoras.selectedItem.toString()
-        val diaSeleccionado = partesFechaSeleccionada[0]
+        
+        // Obtener el día de la semana de la fecha seleccionada
+        val partesFechaNumerica = fechaSeleccionada.split("/")
+        val calendar = Calendar.getInstance()
+        calendar.set(
+            partesFechaNumerica[2].toInt(), // año
+            partesFechaNumerica[1].toInt() - 1, // mes (0-11)
+            partesFechaNumerica[0].toInt() // día
+        )
+        val diaSeleccionado = when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.MONDAY -> "Lunes"
+            Calendar.TUESDAY -> "Martes"
+            Calendar.WEDNESDAY -> "Miércoles"
+            Calendar.THURSDAY -> "Jueves"
+            Calendar.FRIDAY -> "Viernes"
+            Calendar.SATURDAY -> "Sábado"
+            Calendar.SUNDAY -> "Domingo"
+            else -> ""
+        }
 
         // Validar que el día sea laboral para el empleado
         val dbHorario = dbHelper.getReadableDatabase()
@@ -195,35 +211,28 @@ class PantallaReservarCita : AppCompatActivity() {
         cursorServicio.close()
 
         // Crear el objeto Date a partir de la fecha seleccionada
-        val partesFechaNumerica = fechaSeleccionada.split("-")
-        val anio = partesFechaNumerica[0].toInt()
-        val mes = partesFechaNumerica[1].toInt() - 1 // En Calendar, enero es 0
-        val dia = partesFechaNumerica[2].toInt()
-        
-        val calendar = Calendar.getInstance()
-        calendar.clear()
-        calendar.set(Calendar.YEAR, anio)
-        calendar.set(Calendar.MONTH, mes)
-        calendar.set(Calendar.DAY_OF_MONTH, dia)
-        calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(horaInicio.split(":")[0]))
-        calendar.set(Calendar.MINUTE, Integer.parseInt(horaInicio.split(":")[1]))
-
-        val fechaCita = calendar.time
+        val partesFechaCita = fechaSeleccionada.split("/")
+        val anioCita = partesFechaCita[2].toInt()
+        val mesCita = partesFechaCita[1].toInt() - 1 // En Calendar, enero es 0
+        val calendarCita = Calendar.getInstance()
+        calendarCita.clear()
+        calendarCita.set(Calendar.YEAR, anioCita)
+        calendarCita.set(Calendar.MONTH, mesCita)
+        calendarCita.set(Calendar.DAY_OF_MONTH, partesFechaCita[0].toInt())
+        val fechaCita = calendarCita.time
         val duracion = duracionMinutos
-
-        calendar.add(Calendar.MINUTE, duracion)
-        val horaFinEstimada = String.format("%02d:%02d", calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
-
-        // Insertar cita
-        val valores = ContentValues().apply {
-            put("ID_Cliente", obtenerIdCliente()) // Asumiendo que el ID del cliente está en la sesión
-            put("ID_Empleado", empleadoId)
-            put("ID_Servicio", servicioId)
-            put("Fecha_Cita", fechaCita.toString())
-            put("Hora_Inicio", horaInicio)
-            put("Hora_Fin_Estimada", horaFinEstimada)
-            put("Notas_Cita", notas)
-        }
+        
+        calendarCita.add(Calendar.MINUTE, duracion)
+        val horaFinEstimada = String.format("%02d:%02d", calendarCita.get(Calendar.HOUR_OF_DAY), calendarCita.get(Calendar.MINUTE))
+        
+        val valores = ContentValues()
+        valores.put("ID_Cliente", obtenerIdCliente())
+        valores.put("ID_Empleado", empleadoId)
+        valores.put("ID_Servicio", servicioId)
+        valores.put("Fecha_Cita", fechaCita.toString())
+        valores.put("Hora_Inicio", horaInicio)
+        valores.put("Hora_Fin_Estimada", horaFinEstimada)
+        valores.put("Notas_Cita", notas)
 
         val dbw = dbHelper.getWritableDatabase()
         val resultado = dbw.insert("Citas", null, valores)
