@@ -13,7 +13,8 @@ class PantallaInicioSesion : AppCompatActivity() {
     private lateinit var btnCerrar: Button
     private lateinit var tvNombre: TextView
     private lateinit var dbHelper: DBHelper
-    private var userId: Int = -1
+    private var userId: Long = -1
+    private var userRole: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,21 +26,21 @@ class PantallaInicioSesion : AppCompatActivity() {
         tvNombre = findViewById(R.id.tvNombre)
         dbHelper = DBHelper(this)
 
-        // Obtener el ID del usuario de la sesión (debe ser guardado en MainActivity)
-        val userId = intent.getIntExtra("USER_ID", -1)
-        if (userId == -1) {
+        // Obtener el ID del usuario y rol de la sesión
+        userId = intent.getLongExtra("USER_ID", -1)
+        userRole = intent.getStringExtra("USER_ROLE") ?: ""
+        
+        if (userId == -1L || userRole.isEmpty()) {
             finish()
             return
         }
 
-        // Obtener el rol del usuario
+        // Obtener el nombre del usuario
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT u.ID_Rol, c.Nombre FROM Usuarios u JOIN Clientes c ON u.ID_Usuario = c.ID_Usuario WHERE u.ID_Usuario = ?", arrayOf(userId.toString()))
+        val cursor = db.rawQuery("SELECT c.Nombre FROM Usuarios u JOIN Clientes c ON u.ID_Usuario = c.ID_Usuario WHERE u.ID_Usuario = ?", arrayOf(userId.toString()))
         
         if (cursor.moveToFirst()) {
             val nombre = cursor.getString(cursor.getColumnIndex("Nombre"))
-            val rol = cursor.getInt(cursor.getColumnIndex("ID_Rol"))
-            
             tvNombre.text = "¡Hola, $nombre!"
             
             // Cambiar el texto del botón de gestión
@@ -49,6 +50,8 @@ class PantallaInicioSesion : AppCompatActivity() {
 
         btnGestion.setOnClickListener {
             val intent = Intent(this, PantallaGestionCitas::class.java)
+            intent.putExtra("USER_ID", userId)
+            intent.putExtra("USER_ROLE", userRole)
             startActivity(intent)
         }
 

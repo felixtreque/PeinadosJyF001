@@ -89,22 +89,27 @@ CREATE TABLE Horarios_Disponibles_Empleado (
 
 -- Inserts de datos iniciales
 -- ROLES
-INSERT INTO Roles (Nombre_Rol, Descripcion) VALUES ('Administrador', 'Control total del sistema de gestión de peluquería.');
-INSERT INTO Roles (Nombre_Rol, Descripcion) VALUES ('Cliente', 'Usuario regular que puede reservar y gestionar sus propias citas.');
+INSERT INTO Roles (Nombre_Rol, Descripcion) VALUES ('Administrador', 'Puede ver y gestionar todas las citas del sistema.');
+INSERT INTO Roles (Nombre_Rol, Descripcion) VALUES ('Cliente', 'Puede crear y gestionar sus propias citas.');
+INSERT INTO Roles (Nombre_Rol, Descripcion) VALUES ('Empleado', 'Puede crear y gestionar sus propias citas.');
 
 -- USUARIOS
 INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('felix.tataje@gmail.com', 'pass_felix', '12345678A', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Administrador'));
-INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('jacqueline.garcia@gmail.com', 'pass_jacqueline', '98765432B', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Administrador'));
-INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('laura.fernandez.emp@gmail.com', 'pass_laura_emp', '12345678X', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Cliente'));
-INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('miguel.santos.emp@gmail.com', 'pass_miguel_emp', '87654321Y', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Cliente'));
+INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('jacqueline.garcia@gmail.com', 'pass_jacqueline', '98765432B', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Cliente'));
+INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('laura.fernandez.emp@gmail.com', 'pass_laura_emp', '12345678X', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Empleado'));
+INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('miguel.santos.emp@gmail.com', 'pass_miguel_emp', '87654321Y', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Empleado'));
 
 -- CLIENTES
 INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
 VALUES ('Felix', 'Tataje', NULL, 'felix.tataje@gmail.com', '600111222', '1985-05-15', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'felix.tataje@gmail.com'), 'Cortes modernos', NULL, 'Es el dueño.');
+INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
+VALUES ('Jacqueline', 'Garcia', NULL, 'jacqueline.garcia@gmail.com', '654321098', '1980-03-20', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'jacqueline.garcia@gmail.com'), 'Coloración y cortes', NULL, 'Cliente frecuente');
 
 -- EMPLEADOS
 INSERT INTO Empleados (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Inicio_Contrato, Fecha_Fin_Contrato, ID_Usuario, Notas_Internas)
 VALUES ('Laura', 'Fernandez', 'Vega', 'laura.fernandez.emp@gmail.com', '612345678', '2023-01-10', NULL, (SELECT ID_Usuario FROM Usuarios WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Especialista en coloración.');
+INSERT INTO Empleados (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Inicio_Contrato, Fecha_Fin_Contrato, ID_Usuario, Notas_Internas)
+VALUES ('Miguel', 'Santos', 'Martinez', 'miguel.santos.emp@gmail.com', '698765432', '2023-02-15', NULL, (SELECT ID_Usuario FROM Usuarios WHERE Email = 'miguel.santos.emp@gmail.com'), 'Especialista en cortes masculinos.');
 
 -- HORARIOS
 INSERT INTO Horarios_Disponibles_Empleado (ID_Empleado, Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque, Fecha_Aplicacion_Desde, Fecha_Aplicacion_Hasta)
@@ -112,3 +117,7 @@ VALUES ((SELECT ID_Empleado FROM Empleados WHERE Email = 'laura.fernandez.emp@gm
 
 -- SERVICIOS
 INSERT INTO Servicios (Nombre_Servicio, Descripcion, Duracion_Estimada_Minutos, Precio) VALUES ('Corte Simple', 'Corte de pelo básico y rápido.', 30, 15.00);
+INSERT INTO Servicios (Nombre_Servicio, Descripcion, Duracion_Estimada_Minutos, Precio) VALUES ('Corte Complejo', 'Corte de pelo con peinado y estilismo.', 45, 25.00);
+INSERT INTO Servicios (Nombre_Servicio, Descripcion, Duracion_Estimada_Minutos, Precio) VALUES ('Coloración', 'Aplicación de coloración y mechas.', 90, 50.00);
+INSERT INTO Servicios (Nombre_Servicio, Descripcion, Duracion_Estimada_Minutos, Precio) VALUES ('Corte + Coloración', 'Corte y coloración en una sola cita.', 120, 65.00);
+INSERT INTO Servicios (Nombre_Servicio, Descripcion, Duracion_Estimada_Minutos, Precio) VALUES ('Peinado Especial', 'Peinado para ocasiones especiales.', 60, 35.00);

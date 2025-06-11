@@ -16,6 +16,14 @@
             android:text="Reservar Nueva Cita"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvIdUsuario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="italic"
             android:layout_marginBottom="16dp"/>
 
         <Spinner
@@ -54,6 +62,14 @@
             android:id="@+id/spHoras"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/tvFechaSeleccionada"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
 
         <TextView

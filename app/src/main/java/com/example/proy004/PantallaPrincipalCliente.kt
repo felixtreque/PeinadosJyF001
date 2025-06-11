@@ -17,17 +17,25 @@ class PantallaPrincipalCliente : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_gestion_citas) // Usamos el mismo layout que gestión de citas
+        setContentView(R.layout.activity_gestion_citas)
 
         dbHelper = DBHelper(this)
         lvCitas = findViewById(R.id.lvCitas)
         btnIrInicio = findViewById(R.id.btnIrInicio)
+        val btnNuevaCita = findViewById<Button>(R.id.btnNuevaCita)
         btnIrInicio.text = "Cerrar Sesión"
 
         cargarCitas()
 
         btnIrInicio.setOnClickListener {
             finish()
+        }
+
+        btnNuevaCita.setOnClickListener {
+            val intent = Intent(this, PantallaReservarCita::class.java)
+            intent.putExtra("USER_ID", obtenerIdCliente())
+            intent.putExtra("USER_ROLE", "Cliente")
+            startActivity(intent)
         }
     }
 
@@ -41,8 +49,12 @@ class PantallaPrincipalCliente : AppCompatActivity() {
                 c.Hora_Inicio,
                 c.Estado_Cita,
                 cli.Nombre AS Nombre_Cliente,
+                cli.Apellido1 AS Apellido1_Cliente,
+                cli.Apellido2 AS Apellido2_Cliente,
                 serv.Nombre_Servicio,
-                emp.Nombre AS Nombre_Empleado
+                emp.Nombre AS Nombre_Empleado,
+                emp.Apellido1 AS Apellido1_Empleado,
+                emp.Apellido2 AS Apellido2_Empleado
             FROM Citas c
             JOIN Clientes cli ON c.ID_Cliente = cli.ID_Cliente
             JOIN Servicios serv ON c.ID_Servicio = serv.ID_Servicio
@@ -58,8 +70,8 @@ class PantallaPrincipalCliente : AppCompatActivity() {
     }
 
     private fun obtenerIdCliente(): Long {
-        // TODO: Implementar obtención del ID del cliente desde la sesión
-        return 1 // Temporalmente usando ID 1
+        // Obtener el ID del usuario del intent
+        return intent.getLongExtra("USER_ID", -1)
     }
 
     override fun onDestroy() {

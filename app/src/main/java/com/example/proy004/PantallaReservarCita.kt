@@ -21,9 +21,11 @@ import com.example.proy004.adapter.AdaptadorDiasLaborables
 import com.example.proy004.database.DBHelper
 import android.database.Cursor
 import java.util.Calendar
+import android.widget.TextView
 
 class PantallaReservarCita : AppCompatActivity() {
     private lateinit var dbHelper: DBHelper
+    private var clienteId: Long = -1
     private lateinit var spServicios: Spinner
     private lateinit var spEmpleados: Spinner
     private lateinit var spDiasLaborables: Spinner
@@ -31,15 +33,19 @@ class PantallaReservarCita : AppCompatActivity() {
     private lateinit var etNotasCita: EditText
     private lateinit var btnCrearCita: Button
     private lateinit var btnIrInicio: Button
-
+    private lateinit var tvIdUsuario: TextView
+    private lateinit var tvFechaSeleccionada: TextView
+    private var userId: Long = -1
+    private var empleadoId: Long = -1
+    private var userRole: String = ""
     private var serviciosCursor: Cursor? = null
     private var empleadosCursor: Cursor? = null
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reservar_cita)
-
-        dbHelper = DBHelper(this)
+        
+        // Inicializar vistas
         spServicios = findViewById(R.id.spServicios)
         spEmpleados = findViewById(R.id.spEmpleados)
         spDiasLaborables = findViewById(R.id.spDiasLaborables)
@@ -47,19 +53,120 @@ class PantallaReservarCita : AppCompatActivity() {
         etNotasCita = findViewById(R.id.etNotasCita)
         btnCrearCita = findViewById(R.id.btnCrearCita)
         btnIrInicio = findViewById(R.id.btnIrInicio)
+        tvIdUsuario = findViewById(R.id.tvIdUsuario)
+        tvFechaSeleccionada = findViewById(R.id.tvFechaSeleccionada)
 
-        cargarServicios()
-        cargarEmpleados()
-        cargarHoras()
-        actualizarDiasLaborables()
+        // Obtener datos del intent
+        userId = intent.getLongExtra("USER_ID", -1)
+        userRole = intent.getStringExtra("USER_ROLE") ?: ""
+        tvIdUsuario.text = "ID Usuario: $userId\nRol: $userRole"
 
-        btnCrearCita.setOnClickListener {
-            crearCita()
-        }
-
-        btnIrInicio.setOnClickListener {
+        // Validar usuario
+        if (userId == -1L && userRole.isEmpty()) {
+            Toast.makeText(this, "Error: Usuario no válido", Toast.LENGTH_LONG).show()
             finish()
+            return
         }
+
+        // Inicializar base de datos
+        dbHelper = DBHelper(this)
+
+        // Mostrar mensaje adicional para administradores
+        if (userRole == "Administrador") {
+            tvIdUsuario.append(" (Administrador)")
+        }
+
+        // Configurar el ID del cliente según el rol
+        when (userRole) {
+            "Cliente" -> {
+                // Para clientes, buscar el ID_Cliente asociado al usuario
+                val cursorCliente = dbHelper.getReadableDatabase().rawQuery(
+                    "SELECT ID_Cliente FROM Clientes WHERE ID_Usuario = ?",
+                    arrayOf(userId.toString())
+                )
+                if (cursorCliente.moveToFirst()) {
+                    clienteId = cursorCliente.getLong(0)
+                }
+                cursorCliente.close()
+            }
+            "Administrador" -> {
+                // Para administradores, usar el ID del empleado seleccionado
+                clienteId = -1L // Indica que es administrador
+            }
+            "Empleado" -> {
+                // Para empleados, buscar el ID_Empleado asociado al usuario
+                val cursorEmpleado = dbHelper.getReadableDatabase().rawQuery(
+                    "SELECT ID_Empleado FROM Empleados WHERE ID_Usuario = ?",
+                    arrayOf(userId.toString())
+                )
+                if (cursorEmpleado.moveToFirst()) {
+                    empleadoId = cursorEmpleado.getLong(0)
+                }
+                cursorEmpleado.close()
+                clienteId = -1L // Indica que es empleado
+            }
+        }
+
+        // Configurar los spinners
+        spServicios.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                cargarEmpleados()
+                cargarHoras()
+                cargarDiasLaborables()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        spEmpleados.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                empleadoId = id
+                actualizarDiasLaborables()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                empleadoId = -1
+            }
+        }
+
+        spDiasLaborables.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                cargarHoras()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Configurar botones
+        btnCrearCita.setOnClickListener { crearCita() }
+        btnIrInicio.setOnClickListener { finish() }
+
+        // Inicializar datos
+        cargarServicios()
+        spEmpleados.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, obtenerEmpleados())
+
+        // Configurar spinner de días laborables
+        spDiasLaborables.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val fechaSeleccionada = parent?.selectedItem.toString()
+                tvFechaSeleccionada.text = "Fecha seleccionada: $fechaSeleccionada"
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                tvFechaSeleccionada.text = ""
+            }
+        }
+    }
+
+    private fun obtenerEmpleados(): List<String> {
+        val db = dbHelper.getReadableDatabase()
+        val cursor = db.rawQuery("SELECT Nombre, Apellido1, Apellido2 FROM Empleados ORDER BY Nombre", null)
+        val empleados = mutableListOf<String>()
+        while (cursor.moveToNext()) {
+            val nombre = cursor.getString(0)
+            val apellido1 = cursor.getString(1)
+            val apellido2 = cursor.getString(2)
+            empleados.add("$nombre $apellido1 ${if (!apellido2.isNullOrBlank()) apellido2 else ""}")
+        }
+        cursor.close()
+        return empleados
     }
 
     private fun cargarServicios() {
@@ -83,7 +190,6 @@ class PantallaReservarCita : AppCompatActivity() {
     }
 
     private fun cargarHoras() {
-        // Añadir horas desde las 9:00 hasta las 18:30 en intervalos de 30 minutos
         val horas = ArrayList<String>()
         for (hora in 9..18) {
             horas.add(String.format("%02d:00", hora))
@@ -117,142 +223,156 @@ class PantallaReservarCita : AppCompatActivity() {
         }
     }
 
-
-
     private fun convertirHoraAMinutos(hora: String): Int {
         val partes = hora.split(":")
         return partes[0].toInt() * 60 + partes[1].toInt()
     }
 
     private fun crearCita() {
-        val servicioId = spServicios.selectedItemId
-        val empleadoId = spEmpleados.selectedItemId
-        val notas = etNotasCita.text.toString()
-
-        // Obtener fecha y hora seleccionadas
-        val fechaSeleccionada = spDiasLaborables.selectedItem.toString() // La fecha ya viene en formato dd/MM/yyyy
-        val horaInicio = spHoras.selectedItem.toString()
-        
-        // Obtener el día de la semana de la fecha seleccionada
-        val partesFechaNumerica = fechaSeleccionada.split("/")
-        val calendar = Calendar.getInstance()
-        calendar.set(
-            partesFechaNumerica[2].toInt(), // año
-            partesFechaNumerica[1].toInt() - 1, // mes (0-11)
-            partesFechaNumerica[0].toInt() // día
-        )
-        val diaSeleccionado = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.MONDAY -> "Lunes"
-            Calendar.TUESDAY -> "Martes"
-            Calendar.WEDNESDAY -> "Miércoles"
-            Calendar.THURSDAY -> "Jueves"
-            Calendar.FRIDAY -> "Viernes"
-            Calendar.SATURDAY -> "Sábado"
-            Calendar.SUNDAY -> "Domingo"
-            else -> ""
-        }
-
-        // Validar que el día sea laboral para el empleado
-        val dbHorario = dbHelper.getReadableDatabase()
-        val cursorHorario = dbHorario.rawQuery(
-            "SELECT COUNT(*) FROM Horarios_Disponibles_Empleado " +
-            "WHERE ID_Empleado = ? AND Dia_Semana = ?",
-            arrayOf(empleadoId.toString(), diaSeleccionado)
-        )
-        
-        cursorHorario.moveToFirst()
-        val diaLaboral = cursorHorario.getInt(0) > 0
-        cursorHorario.close()
-        
-        if (!diaLaboral) {
-            Toast.makeText(this, "El día seleccionado no es laboral para este empleado", Toast.LENGTH_LONG).show()
+        // Validar que todos los campos requeridos estén seleccionados
+        if (spServicios.selectedItemId == -1L ||
+            spEmpleados.selectedItemId == -1L ||
+            spDiasLaborables.selectedItemId == -1L ||
+            spHoras.selectedItemId == -1L) {
+            Toast.makeText(this, "Por favor, seleccione todos los campos requeridos", Toast.LENGTH_LONG).show()
             return
         }
 
-        // Validar que la hora esté dentro del horario del empleado
-        val cursorHorario2 = dbHorario.rawQuery(
-            "SELECT Hora_Inicio_Bloque, Hora_Fin_Bloque FROM Horarios_Disponibles_Empleado " +
-            "WHERE ID_Empleado = ? AND Dia_Semana = ?",
-            arrayOf(empleadoId.toString(), diaSeleccionado)
-        )
-        
-        var horaValida = false
-        while (cursorHorario2.moveToNext()) {
-            val horaInicioBloque = cursorHorario2.getString(0)
-            val horaFinBloque = cursorHorario2.getString(1)
-            
-            // Convertir las horas a minutos para comparar
-            val horaInicioMin = convertirHoraAMinutos(horaInicio)
-            val horaInicioBloqueMin = convertirHoraAMinutos(horaInicioBloque)
-            val horaFinBloqueMin = convertirHoraAMinutos(horaFinBloque)
-            
-            if (horaInicioMin >= horaInicioBloqueMin && horaInicioMin < horaFinBloqueMin) {
-                horaValida = true
-                break
+        try {
+            // Obtener valores seleccionados
+            val servicioId = spServicios.selectedItemId
+            val empleadoId = spEmpleados.selectedItemId
+            val diaSeleccionado = spDiasLaborables.selectedItem.toString()
+            val horaInicio = spHoras.selectedItem.toString()
+            val notas = etNotasCita.text.toString()
+
+            // Obtener el ID del cliente (para administradores, usar el ID del empleado)
+            val idParaCita = if (userRole == "Administrador") empleadoId else clienteId
+
+            // Verificar si la cita es para el mismo usuario (solo para clientes)
+            if (userRole == "Cliente" && idParaCita != clienteId) {
+                Toast.makeText(this, "Solo puedes crear citas para ti mismo", Toast.LENGTH_LONG).show()
+                return
             }
+
+            // Para administradores, asegurarse de que el empleado existe
+            if (userRole == "Administrador") {
+                val cursorEmpleado = dbHelper.getReadableDatabase().rawQuery(
+                    "SELECT COUNT(*) FROM Empleados WHERE ID_Empleado = ?",
+                    arrayOf(empleadoId.toString())
+                )
+                cursorEmpleado.moveToFirst()
+                if (cursorEmpleado.getInt(0) == 0) {
+                    Toast.makeText(this, "Error: Empleado no encontrado", Toast.LENGTH_LONG).show()
+                    return
+                }
+                cursorEmpleado.close()
+            }
+
+            // Verificar día laboral y horario
+            val db = dbHelper.getReadableDatabase()
+            val cursorHorario = db.rawQuery(
+                "SELECT Dia_Semana, Hora_Inicio_Bloque, Hora_Fin_Bloque FROM Horarios_Disponibles_Empleado " +
+                "WHERE ID_Empleado = ? AND Dia_Semana = ?",
+                arrayOf(empleadoId.toString(), diaSeleccionado)
+            )
+            
+            var diaLaboral = false
+            var horaValida = false
+            
+            while (cursorHorario.moveToNext()) {
+                diaLaboral = true
+                val horaInicioBloque = cursorHorario.getString(1)
+                val horaFinBloque = cursorHorario.getString(2)
+                
+                val horaInicioMin = convertirHoraAMinutos(horaInicio)
+                val horaInicioBloqueMin = convertirHoraAMinutos(horaInicioBloque)
+                val horaFinBloqueMin = convertirHoraAMinutos(horaFinBloque)
+                
+                // Verificar si la hora está dentro del bloque horario
+                if (horaInicioMin >= horaInicioBloqueMin && horaInicioMin < horaFinBloqueMin) {
+                    horaValida = true
+                    break
+                }
+            }
+            cursorHorario.close()
+
+            if (!diaLaboral) {
+                Toast.makeText(this, "El día seleccionado no es laboral para este empleado", Toast.LENGTH_LONG).show()
+                return
+            }
+            
+            if (!horaValida) {
+                Toast.makeText(this, "La hora seleccionada no está dentro del horario laboral", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            // Verificar si ya existe una cita en ese horario
+            val cursorCita = dbHelper.getReadableDatabase().rawQuery(
+                """
+                SELECT COUNT(*) FROM Citas 
+                WHERE ID_Empleado = ? 
+                AND Fecha_Cita = ? 
+                AND Hora_Inicio = ?
+                """.trimIndent(),
+                arrayOf(empleadoId.toString(), diaSeleccionado, horaInicio)
+            )
+            cursorCita.moveToFirst()
+            val citaExistente = cursorCita.getInt(0) > 0
+            cursorCita.close()
+
+            if (citaExistente) {
+                Toast.makeText(this, "Ya existe una cita para este empleado en el horario seleccionado", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            // Obtener la duración del servicio
+            val cursorServicio = db.rawQuery(
+                "SELECT Duracion_Estimada_Minutos FROM Servicios WHERE ID_Servicio = ?",
+                arrayOf(servicioId.toString())
+            )
+            
+            var duracionMinutos = 0
+            if (cursorServicio.moveToFirst()) {
+                duracionMinutos = cursorServicio.getInt(0)
+            }
+            cursorServicio.close()
+
+            // Calcular la hora fin estimada
+            val calendarHoraFin = Calendar.getInstance()
+            val partesHoraInicio = horaInicio.split(":")
+            calendarHoraFin.set(Calendar.HOUR_OF_DAY, partesHoraInicio[0].toInt())
+            calendarHoraFin.set(Calendar.MINUTE, partesHoraInicio[1].toInt())
+            calendarHoraFin.add(Calendar.MINUTE, duracionMinutos)
+            val horaFinEstimada = String.format("%02d:%02d", calendarHoraFin.get(Calendar.HOUR_OF_DAY), calendarHoraFin.get(Calendar.MINUTE))
+
+            // Insertar la cita
+            val values = ContentValues().apply {
+                put("ID_Cliente", idParaCita)
+                put("ID_Servicio", servicioId)
+                put("ID_Empleado", empleadoId)
+                put("Fecha_Cita", diaSeleccionado)
+                put("Hora_Inicio", horaInicio)
+                put("Hora_Fin_Estimada", horaFinEstimada)
+                put("Notas_Cita", notas)
+                put("Estado_Cita", "Pendiente")
+            }
+
+            val idCita = dbHelper.createCita(values, userId)
+            if (idCita != -1L) {
+                Toast.makeText(this, "Cita creada exitosamente", Toast.LENGTH_LONG).show()
+                finish()
+            } else {
+                Toast.makeText(this, "Error al crear la cita", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error al procesar la cita: ${e.message}", Toast.LENGTH_LONG).show()
         }
-        cursorHorario2.close()
-
-        if (!horaValida) {
-            Toast.makeText(this, "La hora seleccionada no está dentro del horario del empleado", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        val dbServicio = dbHelper.getReadableDatabase()
-        val cursorServicio = dbServicio.rawQuery(
-            "SELECT Duracion_Estimada_Minutos FROM Servicios WHERE ID_Servicio = ?",
-            arrayOf(servicioId.toString())
-        )
-        
-        var duracionMinutos = 0
-        if (cursorServicio.moveToFirst()) {
-            duracionMinutos = cursorServicio.getInt(0)
-        }
-        cursorServicio.close()
-
-        // Crear el objeto Date a partir de la fecha seleccionada
-        val partesFechaCita = fechaSeleccionada.split("/")
-        val anioCita = partesFechaCita[2].toInt()
-        val mesCita = partesFechaCita[1].toInt() - 1 // En Calendar, enero es 0
-        val calendarCita = Calendar.getInstance()
-        calendarCita.clear()
-        calendarCita.set(Calendar.YEAR, anioCita)
-        calendarCita.set(Calendar.MONTH, mesCita)
-        calendarCita.set(Calendar.DAY_OF_MONTH, partesFechaCita[0].toInt())
-        val fechaCita = calendarCita.time
-        val duracion = duracionMinutos
-        
-        calendarCita.add(Calendar.MINUTE, duracion)
-        val horaFinEstimada = String.format("%02d:%02d", calendarCita.get(Calendar.HOUR_OF_DAY), calendarCita.get(Calendar.MINUTE))
-        
-        val valores = ContentValues()
-        valores.put("ID_Cliente", obtenerIdCliente())
-        valores.put("ID_Empleado", empleadoId)
-        valores.put("ID_Servicio", servicioId)
-        valores.put("Fecha_Cita", fechaCita.toString())
-        valores.put("Hora_Inicio", horaInicio)
-        valores.put("Hora_Fin_Estimada", horaFinEstimada)
-        valores.put("Notas_Cita", notas)
-
-        val dbw = dbHelper.getWritableDatabase()
-        val resultado = dbw.insert("Citas", null, valores)
-
-        if (resultado == -1L) {
-            Toast.makeText(this, "Error al crear la cita", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Cita creada exitosamente", Toast.LENGTH_SHORT).show()
-            finish()
-        }
-    }
-
-    private fun obtenerIdCliente(): Long {
-        // TODO: Implementar obtención del ID del cliente desde la sesión
-        return 1 // Temporalmente usando ID 1
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        serviciosCursor?.close()
-        empleadosCursor?.close()
+        serviciosCursor?.let { if (!it.isClosed) it.close() }
+        empleadosCursor?.let { if (!it.isClosed) it.close() }
     }
 }

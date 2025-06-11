@@ -41,16 +41,37 @@ class MainActivity : AppCompatActivity() {
                 val cursor = db.rawQuery("SELECT ID_Usuario, Contrasena_Hash FROM Usuarios WHERE Email = ?", arrayOf(correo))
                 
                 if (cursor.moveToFirst()) {
-                    val userId = cursor.getInt(cursor.getColumnIndex("ID_Usuario"))
+                    val userId = cursor.getLong(cursor.getColumnIndex("ID_Usuario"))
                     val contrasenaHash = cursor.getString(cursor.getColumnIndex("Contrasena_Hash"))
                     cursor.close()
                     
                     // Verificamos si la contraseña coincide con el hash
                     if (contrasena == contrasenaHash) {
-                        // Pasar el ID del usuario a la siguiente actividad
-                        val intent = Intent(this, PantallaInicioSesion::class.java)
-                        intent.putExtra("USER_ID", userId)
-                        startActivity(intent)
+                // Obtener el rol del usuario
+                val cursorRol = db.rawQuery("SELECT ID_Rol FROM Usuarios WHERE ID_Usuario = ?", arrayOf(userId.toString()))
+                if (cursorRol.moveToFirst()) {
+                    val rol = cursorRol.getInt(cursorRol.getColumnIndex("ID_Rol"))
+                    cursorRol.close()
+
+                    // Redirigir según el rol
+                    val intent = when (rol) {
+                        1 -> Intent(this, PantallaInicioSesion::class.java) // Administrador
+                        2 -> Intent(this, PantallaPrincipalCliente::class.java) // Cliente
+                        else -> {
+                            Toast.makeText(this, "Rol no válido", Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
+                    }
+                    intent.putExtra("USER_ID", userId)
+                    intent.putExtra("USER_ROLE", when (rol) {
+                        1 -> "Administrador"
+                        2 -> "Cliente"
+                        else -> ""
+                    })
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, "Error al obtener el rol del usuario", Toast.LENGTH_SHORT).show()
+                }
                     } else {
                         Toast.makeText(this, "Email o contraseña incorrectos", Toast.LENGTH_SHORT).show()
                     }

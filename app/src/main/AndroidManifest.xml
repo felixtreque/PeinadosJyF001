@@ -42,6 +42,10 @@
             android:name=".PantallaReservarCita"
             android:exported="false" />
 
+        <activity
+            android:name=".PantallaPrincipalCliente"
+            android:exported="false" />
+
     </application>
 
 </manifest>

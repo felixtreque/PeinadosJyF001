@@ -9,14 +9,11 @@ import com.example.proy004.adapter.AdaptadorCitas
 import com.example.proy004.database.DBHelper
 import android.database.Cursor
 
-class PantallaGestionCitas : AppCompatActivity() {
+class PantallaPrincipalAdministrador : AppCompatActivity() {
     private lateinit var dbHelper: DBHelper
     private lateinit var lvCitas: ListView
-    private lateinit var btnNuevaCita: Button
     private lateinit var btnIrInicio: Button
     private var citasCursor: Cursor? = null
-    private var userId: Long = -1
-    private var userRole: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,24 +21,21 @@ class PantallaGestionCitas : AppCompatActivity() {
 
         dbHelper = DBHelper(this)
         lvCitas = findViewById(R.id.lvCitas)
-        btnNuevaCita = findViewById(R.id.btnNuevaCita)
         btnIrInicio = findViewById(R.id.btnIrInicio)
-        
-        // Obtener datos del usuario
-        userId = intent.getLongExtra("USER_ID", -1)
-        userRole = intent.getStringExtra("USER_ROLE") ?: ""
-        
-        cargarCitas()
+        val btnNuevaCita = findViewById<Button>(R.id.btnNuevaCita)
+        btnIrInicio.text = "Cerrar Sesión"
 
-        btnNuevaCita.setOnClickListener {
-            val intent = Intent(this, PantallaReservarCita::class.java)
-            intent.putExtra("USER_ID", userId)
-            intent.putExtra("USER_ROLE", userRole)
-            startActivity(intent)
-        }
+        cargarCitas()
 
         btnIrInicio.setOnClickListener {
             finish()
+        }
+
+        btnNuevaCita.setOnClickListener {
+            val intent = Intent(this, PantallaGestionCitas::class.java)
+            intent.putExtra("USER_ID", obtenerIdUsuario())
+            intent.putExtra("USER_ROLE", "Administrador")
+            startActivity(intent)
         }
     }
 
@@ -72,6 +66,11 @@ class PantallaGestionCitas : AppCompatActivity() {
 
         val adaptador = AdaptadorCitas(this, citasCursor!!)
         lvCitas.adapter = adaptador
+    }
+
+    private fun obtenerIdUsuario(): Long {
+        // Obtener el ID del usuario del intent
+        return intent.getIntExtra("USER_ID", -1).toLong()
     }
 
     override fun onDestroy() {
