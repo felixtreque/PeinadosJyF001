@@ -128,6 +128,54 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     // Métodos para gestionar citas
     fun createCita(cita: ContentValues, idUsuario: Long): Long {
         val db = writableDatabase
+        
+        // Obtener datos de la nueva cita
+        val fechaCita = cita.getAsString("Fecha_Cita")
+        val horaInicio = cita.getAsString("Hora_Inicio")
+        val idEmpleado = cita.getAsLong("ID_Empleado")
+        val idCliente = cita.getAsLong("ID_Cliente")
+        
+        // Verificar si hay citas del mismo empleado que se solapen
+        val cursorEmpleado = db.rawQuery("""
+            SELECT COUNT(*) FROM Citas 
+            WHERE ID_Empleado = ? 
+            AND Fecha_Cita = ? 
+            AND (
+                (Hora_Inicio <= ? AND Hora_Fin_Estimada > ?) OR 
+                (Hora_Inicio < ? AND Hora_Fin_Estimada >= ?)
+            )
+        """.trimIndent(), arrayOf(
+            idEmpleado.toString(),
+            fechaCita,
+            horaInicio, horaInicio,
+            horaInicio, horaInicio
+        ))
+        
+        if (cursorEmpleado.moveToFirst() && cursorEmpleado.getInt(0) > 0) {
+            cursorEmpleado.close()
+            return -1L // Ya hay una cita que se solapa con el empleado
+        }
+        cursorEmpleado.close()
+        
+        // Verificar si hay citas del mismo cliente en el mismo horario
+        val cursorCliente = db.rawQuery("""
+            SELECT COUNT(*) FROM Citas 
+            WHERE ID_Cliente = ? 
+            AND Fecha_Cita = ? 
+            AND Hora_Inicio = ?
+        """.trimIndent(), arrayOf(
+            idCliente.toString(),
+            fechaCita,
+            horaInicio
+        ))
+        
+        if (cursorCliente.moveToFirst() && cursorCliente.getInt(0) > 0) {
+            cursorCliente.close()
+            return -1L // Ya hay una cita del cliente en el mismo horario
+        }
+        cursorCliente.close()
+        
+        // Si no hay solapamientos, crear la cita
         val idCita = db.insert("Citas", null, cita)
         
         if (idCita != -1L) {
