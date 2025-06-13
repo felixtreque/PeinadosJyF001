@@ -95,15 +95,26 @@ INSERT INTO Roles (Nombre_Rol, Descripcion) VALUES ('Empleado', 'Puede crear y g
 
 -- USUARIOS
 INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('felix.tataje@gmail.com', 'pass_felix', '12345678A', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Administrador'));
-INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('jacqueline.garcia@gmail.com', 'pass_jacqueline', '98765432B', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Cliente'));
+INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('jacqueline.garcia@gmail.com', 'pass_jacqueline', '98765432B', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Administrador'));
 INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('laura.fernandez.emp@gmail.com', 'pass_laura_emp', '12345678X', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Empleado'));
 INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('miguel.santos.emp@gmail.com', 'pass_miguel_emp', '87654321Y', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Empleado'));
+INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('ana.lopez@gmail.com', 'pass_ana', '11111111C', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Cliente'));
+INSERT INTO Usuarios (Email, Contrasena_Hash, DNI_NIE_Pasaporte, ID_Rol) VALUES ('juan.perez@gmail.com', 'pass_juan', '22222222D', (SELECT ID_Rol FROM Roles WHERE Nombre_Rol = 'Cliente'));
+
 
 -- CLIENTES
 INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
 VALUES ('Felix', 'Tataje', NULL, 'felix.tataje@gmail.com', '600111222', '1985-05-15', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'felix.tataje@gmail.com'), 'Cortes modernos', NULL, 'Es el dueño.');
 INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
-VALUES ('Jacqueline', 'Garcia', NULL, 'jacqueline.garcia@gmail.com', '654321098', '1980-03-20', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'jacqueline.garcia@gmail.com'), 'Coloración y cortes', NULL, 'Cliente frecuente');
+VALUES ('Jacqueline', 'Garcia', NULL, 'jacqueline.garcia@gmail.com', '654321098', '1980-03-20', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'jacqueline.garcia@gmail.com'), 'Coloración y cortes', NULL, 'Es la dueña.');
+INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
+VALUES ('Ana', 'Lopez', 'Martinez', 'ana.lopez@gmail.com', '611111111', '1992-03-10', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'ana.lopez@gmail.com'), 'Cortes de flequillo', NULL, NULL);
+INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
+VALUES ('Juan', 'Perez', 'Diaz', 'juan.perez@gmail.com', '622222222', '1988-07-25', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'juan.perez@gmail.com'), 'Cortes clásicos', NULL, 'Prefiere citas por la mañana.');
+INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
+VALUES ('Laura', 'Fernandez', 'Vega', 'laura.fernandez.emp@gmail.com', '612345678', '1990-03-20', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'laura.fernandez.emp@gmail.com'), 'Cortes de señora', NULL, 'Es empleada.');
+INSERT INTO Clientes (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Nacimiento, ID_Usuario, Preferencias_Servicio, Alergias, Notas)
+VALUES ('Miguel', 'Santos', 'Marin', 'miguel.santos.emp@gmail.com', '687654321', '1988-07-10', (SELECT ID_Usuario FROM Usuarios WHERE Email = 'miguel.santos.emp@gmail.com'), 'Arreglo de barba', NULL, 'Es empleado.');
 
 -- EMPLEADOS
 INSERT INTO Empleados (Nombre, Apellido1, Apellido2, Email, Telefono, Fecha_Inicio_Contrato, Fecha_Fin_Contrato, ID_Usuario, Notas_Internas)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import java.io.File
 import android.content.ContentValues
 import android.database.Cursor
 
@@ -12,36 +13,55 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     private var database: SQLiteDatabase? = null
 
     companion object {
-        private const val DATABASE_NAME = "BBDD_PeinadosJyF.db"
+        private const val DATABASE_NAME = "BBDD_PeinadosJyFProyecto.db"
         private const val DATABASE_VERSION = 1
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
         // No necesitamos crear las tablas ya que la base de datos viene predefinida en assets
+        // Solo copiamos la base de datos existente
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         // No necesitamos actualizar la base de datos ya que no se modificarán las tablas
+        // Solo copiamos la base de datos existente
     }
 
     init {
-        // Copiar la base de datos desde assets si no existe
-        val dbPath = context.getDatabasePath(DATABASE_NAME)
-        if (!dbPath.exists()) {
-            try {
-                val inputStream = context.assets.open("BBDD_PeinadosJyF.db")
-                val outputStream = dbPath.outputStream()
-                val buffer = ByteArray(1024)
-                var length: Int
-                while (inputStream.read(buffer).also { length = it } > 0) {
-                    outputStream.write(buffer, 0, length)
+        // Crear la base de datos usando el script SQL
+        Log.d("DBHelper", "Inicializando base de datos...")
+        try {
+            val db = getWritableDatabase()
+            
+            // Leer el script SQL
+            val inputStream = context.assets.open("BBDD_PeinadosJyF.sql")
+            val script = inputStream.bufferedReader().use { it.readText() }
+            inputStream.close()
+            
+            // Dividir el script en sentencias individuales
+            val statements = script.split(';').filter { it.isNotBlank() }
+            
+            // Ejecutar cada sentencia
+            for (statement in statements) {
+                try {
+                    // Limpiar la sentencia
+                    val cleanStatement = statement.trim()
+                    
+                    // Solo ejecutar si la sentencia no está vacía
+                    if (cleanStatement.isNotEmpty()) {
+                        db.execSQL(cleanStatement)
+                        Log.d("DBHelper", "Ejecutada sentencia: $cleanStatement")
+                    }
+                } catch (e: Exception) {
+                    Log.e("DBHelper", "Error ejecutando sentencia: $statement")
+                    e.printStackTrace()
                 }
-                outputStream.flush()
-                outputStream.close()
-                inputStream.close()
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
+            
+            Log.d("DBHelper", "Base de datos inicializada exitosamente")
+        } catch (e: Exception) {
+            Log.e("DBHelper", "Error inicializando base de datos: ${e.message}")
+            e.printStackTrace()
         }
     }
 
